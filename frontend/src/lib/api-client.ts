@@ -1,0 +1,32 @@
+import axios, { type AxiosError, type AxiosInstance } from "axios";
+
+// It will receive the token from Clerk and we will
+// pass this token to the backend.
+export function createBrowserApiClient(
+  getToken: () => Promise<string | null>
+): AxiosInstance {
+  const client = axios.create({
+    baseURL: process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5000",
+    withCredentials: false
+  });
+
+  client.interceptors.request.use(async(config) => {
+    const token = await getToken();
+
+    if (token) {
+      config.headers = config.headers ?? {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  });
+
+  client.interceptors.response.use(
+    (response) => response,
+    (error: AxiosError) => {
+      return Promise.reject(error);
+    }
+  );
+
+  return client;
+}
