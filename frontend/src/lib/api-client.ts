@@ -1,4 +1,4 @@
-import axios, { type AxiosError, type AxiosInstance } from "axios";
+import axios, { type AxiosRequestConfig, type AxiosError, type AxiosInstance } from "axios";
 
 // It will receive the token from Clerk and we will
 // pass this token to the backend.
@@ -29,4 +29,14 @@ export function createBrowserApiClient(
   );
 
   return client;
+}
+
+export async function apiGet<T>(
+  client: AxiosInstance,
+  url: string,
+  config?: AxiosRequestConfig
+) : Promise<T> {
+  const response = await client.get<{data: T}>(url, config);
+
+  return response.data.data;
 }
