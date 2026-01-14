@@ -1,4 +1,6 @@
 'use client';
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiGet, createBrowserApiClient } from "@/lib/api-client";
 import { useAuth } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -78,8 +80,52 @@ function ProfilePage() {
     loadProfile();
   }, [apiClient, form]);
 
+  const displayNameValue = form.watch("displayName");
+  const handleValue = form.watch("handle");
+  const avatarUrlValue = form.watch("avatarUrl");
+
   return (
-    <div>Profile</div>
+    <>
+      <SignedOut>
+        User is signed out
+      </SignedOut>
+
+      <SignedIn>
+        <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-8">
+          <div>
+            <h1 className="flex items-center text-3xl font-bold tracking-tight text-foreground">
+              <User className="w-8 h-8 text-primary" />
+              Profile Settings
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">Manage your profile information</p>
+          </div>
+
+          <Card className="border-border/70 bg-card">
+          <CardHeader className="pb-4">
+            <div className="flex items-start gap-6">
+              <Avatar className="h-20 w-20">
+                {
+                  avatarUrlValue && 
+                  <AvatarImage 
+                    src={avatarUrlValue || "/placeholder.xyz"} 
+                    alt={displayNameValue ?? ""} 
+                  />
+                }
+              </Avatar>
+
+              <div className="flex-1">
+                <CardTitle className="text-2xl text-foreground">
+                  {displayNameValue || "Your display name"}
+                </CardTitle>
+              </div>
+
+              <div></div>
+            </div>
+          </CardHeader>
+          </Card>
+        </div>
+      </SignedIn>
+    </>
   );
 }
 

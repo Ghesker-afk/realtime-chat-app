@@ -3,6 +3,7 @@ import {z} from "zod";
 import { UserProfile, UserProfileResponse } from "../modules/users/user.types.js";
 import { getAuth } from "@clerk/express";
 import { UnauthorizedError } from "../lib/errors.js";
+import { updateUserProfile } from "../modules/users/user.service.js";
 
 export const userRouter = Router();
 
