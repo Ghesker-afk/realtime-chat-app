@@ -1,6 +1,6 @@
 import { query } from "../../db/db.js";
-import { BadRequestError } from "../../lib/errors.js";
-import { Category, CategoryRow, mapCategoryRow, ThreadDetail } from "./threads.types.js";
+import { BadRequestError, NotFoundError } from "../../lib/errors.js";
+import { Category, CategoryRow, mapCategoryRow, mapThreadDetailRow, ThreadDetail, ThreadDetailRow } from "./threads.types.js";
 
 
 export async function listCategories(): Promise<Category[]> {
@@ -53,4 +53,39 @@ export async function createThread(params: {
   const threadId = insertRes.rows[0].id;
 
   return getThreadById(threadId);
+}
+
+export async function getThreadById(id: number) : Promise<ThreadDetail> {
+
+  const result = await query<ThreadDetailRow>(
+    `
+    SELECT 
+      t.id,
+      t.title,
+      t.body,
+      t.created_at,
+      t.updated_at,
+      c.slug AS category_slug,
+      c.name AS category_name
+      u.display_name AS author_display_name,
+      u.handle AS author_handle
+    FROM threads t
+    INNER JOIN categories c
+    ON c.id = t.category_id
+    INNER JOIN users u
+    ON u.id = t.author_user_id
+    WHERE t.id = $1
+    LIMIT 1
+    `,
+    [id]
+  );
+
+  const row = result.rows[0];
+
+  if (!row) {
+    throw new NotFoundError("Thread not found");
+  }
+
+  return mapThreadDetailRow(row);
+
 }
