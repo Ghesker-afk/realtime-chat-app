@@ -23,6 +23,22 @@ function toResponse(profile: UserProfile): UserProfileResponse {
 
 // GET /api/me
 
+userRouter.get("/", async(req, res, next) => {
+  try {
+    const auth = getAuth(req);
+    if (!auth.userId) {
+      throw new UnauthorizedError("Unauthorized");
+    }
+
+    const profile = await getUserFromClerk(auth.userId);
+    const response = toResponse(profile);
+
+    res.json({ data: response });
+
+  } catch (error) {
+    next(error);
+  }
+});
 
 // PATCH /api/me
 

@@ -1,6 +1,17 @@
 // one type for our DB, and one more we want to
 // expose to the API. 
 
+export type UserRow = {
+  id: number;
+  clerk_user_id: string;
+  display_name: string | null;
+  handle: string | null;
+  avatar_url: string | null;
+  bio: string | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
 // this is the type that we are going to expose
 // to the API layer.
 export type User = {
