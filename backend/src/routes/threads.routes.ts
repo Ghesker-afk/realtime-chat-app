@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { listCategories } from "../modules/threads/threads.repository.js";
+import { createThread, listCategories } from "../modules/threads/threads.repository.js";
 import { getAuth } from "@clerk/express";
 import { UnauthorizedError } from "../lib/errors.js";
 import { z } from "zod";

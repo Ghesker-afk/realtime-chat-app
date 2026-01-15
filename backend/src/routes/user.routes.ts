@@ -1,6 +1,6 @@
 import {Router} from "express";
 import {z} from "zod";
-import { UserProfile, UserProfileResponse } from "../modules/users/user.types.js";
+import { toUserProfileResponse, UserProfile, UserProfileResponse } from "../modules/users/user.types.js";
 import { getAuth } from "@clerk/express";
 import { UnauthorizedError } from "../lib/errors.js";
 import { updateUserProfile } from "../modules/users/user.service.js";
@@ -16,21 +16,8 @@ const UserProfileUpdateSchema = z.object({
   avatarUrl: z.url("Avatar must be a valid url").optional()
 });
 
-function toUserProfileResponse(profile: UserProfile): UserProfileResponse {
-  const {user, clerkEmail, clerkFullName} = profile;
-
-  return {
-    id: user.id,
-    clerkUserId: user.clerkUserId,
-    email: clerkEmail ?? null,
-    displayName: user.displayName ?? clerkFullName ?? null,
-    handle: user.handle ?? null,
-    avatarUrl: user.avatarUrl ?? null,
-    bio: user.bio ?? null
-  }
-}
-
 function toResponse(profile: UserProfile): UserProfileResponse {
+  
   return toUserProfileResponse(profile);
 }
 
