@@ -34,3 +34,52 @@ export async function listRepliesForThread(threadId: number) {
     }
   }));
 }
+
+export async function createReply(params: {
+  threadId: number;
+  authorUserId: number;
+  body: string;
+}) {
+  const {body, threadId, authorUserId} = params;
+
+  const result = await query(
+    `
+    INSERT INTO replies (thread_id, author_user_id, body)
+    VALUES ($1, $2, $3)
+    RETURNING id, created_at
+    `,
+    [threadId, authorUserId, body]
+  );
+
+  const row = result.rows[0];
+
+  const fullResult = query(
+    `
+    SELECT
+      r.id,
+      r.body,
+      r.created_at,
+      u.display_name AS author_display_name,
+      u.handle AS author_handle
+    FROM replies r
+    INNER JOIN users AS u
+    ON u.id = r.author_user_id
+    WHERE r.id = $1
+    LIMIT 1
+    `,
+    [row.id]
+  );
+
+  const replyRow = (await fullResult).rows[0];
+
+  return {
+    id: replyRow.id as number,
+    body: replyRow.body as string,
+    createdAt: replyRow.created_at as Date,
+    author: {
+      displayName: (replyRow.author_display_name as string) ?? null,
+      handle: (replyRow.author_handle as string) ?? null
+    }
+  }
+
+}

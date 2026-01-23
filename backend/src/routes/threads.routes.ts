@@ -4,7 +4,7 @@ import { getAuth } from "@clerk/express";
 import { BadRequestError, UnauthorizedError } from "../lib/errors.js";
 import { z } from "zod";
 import { getUserFromClerk } from "../modules/users/user.service.js";
-import { listRepliesForThread } from "../modules/threads/replies.repository.js";
+import { createReply, listRepliesForThread } from "../modules/threads/replies.repository.js";
 
 export const threadsRouter = Router();
 
@@ -123,3 +123,39 @@ threadsRouter.get("/threads/:threadId/replies", async(req, res, next) => {
     next(error);
   }
 })
+
+threadsRouter.post("/threads/:threadId/replies", async(req, res, next) => {
+  try {
+
+    const auth = getAuth(req);
+
+    if (!auth.userId) {
+      throw new UnauthorizedError("Unauthorized");
+    }
+
+    const threadId = Number(req.params.threadId);
+    if (!Number.isInteger(threadId) || threadId <= 0) {
+      throw new BadRequestError("Invalid thread ID");
+    }
+
+    const bodyRaw = typeof req.body?.body === "string" ? req.body.body : "";
+    if (!bodyRaw) {
+      throw new BadRequestError("Reply is too short!");
+    }
+
+    const profile = await getUserFromClerk(auth.userId);
+
+    const reply = await createReply({
+      threadId,
+      authorUserId: profile.user.id,
+      body: bodyRaw
+    });
+
+    // notification -> trigger here, but later.
+
+    res.status(201).json({ data: reply });
+
+  } catch (error) {
+    next(error);
+  }
+});
