@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { createThread, getThreadById, listCategories, parseThreadListFilter } from "../modules/threads/threads.repository.js";
+import { createThread, getThreadById, listCategories, listThreads, parseThreadListFilter } from "../modules/threads/threads.repository.js";
 import { getAuth } from "@clerk/express";
 import { BadRequestError, UnauthorizedError } from "../lib/errors.js";
 import { z } from "zod";
 import { getUserFromClerk } from "../modules/users/user.service.js";
+import { listRepliesForThread } from "../modules/threads/replies.repository.js";
 
 export const threadsRouter = Router();
 
@@ -101,3 +102,24 @@ threadsRouter.get("/threads", async(req, res, next) => {
     next(error);
   }
 });
+
+
+// Replies and Likes Endpoints
+threadsRouter.get("/threads/:threadId/replies", async(req, res, next) => {
+  try {
+
+    const auth = getAuth(req);
+
+    if (!auth.userId) {
+      throw new UnauthorizedError("Unauthorized");
+    }
+
+    const threadId = Number(req.params.threadId);
+    const replies = await listRepliesForThread(threadId);
+
+    res.json({ data: replies });
+
+  } catch (error) {
+    next(error);
+  }
+})
