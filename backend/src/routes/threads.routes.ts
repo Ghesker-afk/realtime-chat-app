@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createThread, getThreadById, listCategories } from "../modules/threads/threads.repository.js";
+import { createThread, getThreadById, listCategories, parseThreadListFilter } from "../modules/threads/threads.repository.js";
 import { getAuth } from "@clerk/express";
 import { BadRequestError, UnauthorizedError } from "../lib/errors.js";
 import { z } from "zod";
@@ -76,6 +76,26 @@ threadsRouter.get("/threads/:threadId", async(req, res, next) => {
     const thread = await getThreadById(threadId);
 
     res.json({ data: thread });
+
+  } catch (error) {
+    next(error);
+  }
+});
+
+threadsRouter.get("/threads", async(req, res, next) => {
+  try {
+
+    const filter = parseThreadListFilter({
+      page: req.query.page,
+      pageSize: req.query.pageSize,
+      category: req.query.category,
+      q: req.query.q,
+      sort: req.query.sort
+    });
+
+    const extractListOfThreads = await listThreads(filter);
+
+    res.json({ data: extractListOfThreads });
 
   } catch (error) {
     next(error);

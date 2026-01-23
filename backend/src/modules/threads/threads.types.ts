@@ -68,3 +68,28 @@ export function mapThreadDetailRow(row: ThreadDetailRow) : ThreadDetail {
     }
   }
 }
+
+export type ThreadListFilter = {
+  page: number;
+  pageSize: number;
+  categorySlug?: string;
+  search?: string;
+  sort: "new" | "old"
+}
+
+
+export type ThreadSummary = {
+  id: number;
+  title: string;
+  excerpt: string;
+  createdAt: Date;
+  updatedAt: Date;
+  category: {
+    slug: string;
+    name: string;
+  },
+  author: {
+    displayName: string | null;
+    handle: string | null;
+  }
+};

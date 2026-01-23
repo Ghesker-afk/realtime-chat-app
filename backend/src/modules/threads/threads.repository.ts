@@ -1,7 +1,33 @@
 import { query } from "../../db/db.js";
 import { BadRequestError, NotFoundError } from "../../lib/errors.js";
-import { Category, CategoryRow, mapCategoryRow, mapThreadDetailRow, ThreadDetail, ThreadDetailRow } from "./threads.types.js";
+import { Category, CategoryRow, mapCategoryRow, mapThreadDetailRow, ThreadDetail, ThreadDetailRow, ThreadListFilter, ThreadSummary } from "./threads.types.js";
 
+export function parseThreadListFilter(queryObj: {
+  page?: unknown;
+  pageSize?: unknown;
+  category?: unknown;
+  q?: unknown;
+  sort?: unknown;
+}) : ThreadListFilter {
+  
+  const page = Number(queryObj.page) || 1;
+  const rawPageSize = Number(queryObj.pageSize) || 20;
+  const pageSize = Math.min(Math.max(rawPageSize, 1), 50);
+
+  const categorySlug = typeof queryObj.category === "string" && queryObj.category.trim() ? queryObj.category.trim() : undefined;
+
+  const search = typeof queryObj.q === "string" && queryObj.q.trim() ? queryObj.q.trim() : undefined;
+
+  const sort: "new" | "old" = queryObj.sort === "old" ? "old" : "new";
+
+  return {
+    page,
+    pageSize,
+    search,
+    sort,
+    categorySlug
+  };
+ }
 
 export async function listCategories(): Promise<Category[]> {
   
@@ -87,5 +113,32 @@ export async function getThreadById(id: number) : Promise<ThreadDetail> {
   }
 
   return mapThreadDetailRow(row);
+
+}
+
+export async function listThreads(filter: ThreadListFilter) : Promise<ThreadSummary[]> {
+  
+  const {page, pageSize, categorySlug, search, sort} = filter;
+
+  const conditions: string[] = [];
+
+  const params: unknown[] = []; 
+
+  let idx = 1;
+
+  if (categorySlug) {
+    conditions.push(`c.slug = ${idx++}`);
+    params.push(categorySlug);
+  }
+
+  if (search) {
+    conditions.push(`(t.title ILIKE ${idx}) OR t.body ILIKE ${idx}`);
+
+    params.push(`%${search}%`);
+
+    idx++;
+  }
+
+  const whereClause = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
 
 }
