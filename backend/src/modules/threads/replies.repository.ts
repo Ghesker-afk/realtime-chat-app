@@ -1,5 +1,5 @@
 import { query } from "../../db/db.js";
-import { BadRequestError } from "../../lib/errors.js";
+import { BadRequestError, NotFoundError } from "../../lib/errors.js";
 
 
 export async function listRepliesForThread(threadId: number) {
@@ -82,4 +82,24 @@ export async function createReply(params: {
     }
   }
 
+}
+
+export async function findReplyAuthor(replyId: number) {
+  const result = await query(
+    `
+    SELECT author_user_id
+    FROM replies
+    WHERE id = $1
+    LIMIT 1
+    `,
+    [replyId]
+  );
+
+  const row = result.rows[0];
+
+  if (!row) {
+    throw new NotFoundError("Reply not found!");
+  }
+
+  return row.author_user_id as number;
 }
