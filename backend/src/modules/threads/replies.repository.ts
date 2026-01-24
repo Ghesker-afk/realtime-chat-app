@@ -103,3 +103,13 @@ export async function findReplyAuthor(replyId: number) {
 
   return row.author_user_id as number;
 }
+
+export async function deleteReplyById(replyId: number) {
+  await query(
+    `
+    DELETE FROM replies
+    WHERE id = $1
+    `,
+    [replyId]
+  );
+}

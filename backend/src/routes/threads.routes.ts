@@ -4,7 +4,7 @@ import { getAuth } from "@clerk/express";
 import { BadRequestError, UnauthorizedError } from "../lib/errors.js";
 import { z } from "zod";
 import { getUserFromClerk } from "../modules/users/user.service.js";
-import { createReply, findReplyAuthor, listRepliesForThread } from "../modules/threads/replies.repository.js";
+import { createReply, deleteReplyById, findReplyAuthor, listRepliesForThread } from "../modules/threads/replies.repository.js";
 
 export const threadsRouter = Router();
 
