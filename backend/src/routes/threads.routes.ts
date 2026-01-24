@@ -122,7 +122,7 @@ threadsRouter.get("/threads/:threadId/replies", async(req, res, next) => {
   } catch (error) {
     next(error);
   }
-})
+});
 
 threadsRouter.post("/threads/:threadId/replies", async(req, res, next) => {
   try {
@@ -154,6 +154,36 @@ threadsRouter.post("/threads/:threadId/replies", async(req, res, next) => {
     // notification -> trigger here, but later.
 
     res.status(201).json({ data: reply });
+
+  } catch (error) {
+    next(error);
+  }
+});
+
+threadsRouter.delete("/replies/:replyId", async(req, res, next) => {
+  try {
+
+    const auth = getAuth(req);
+
+    if (!auth.userId) {
+      throw new UnauthorizedError("Unauthorized");
+    }
+
+    const replyId = Number(req.params.replyId);
+    if (!Number.isInteger(replyId) || replyId <= 0) {
+      throw new BadRequestError("Invalid reply ID");
+    }
+
+    const profile = await getUserFromClerk(auth.userId);
+    const authorUserId = await findReplyAuthor(replyId);
+
+    if (authorUserId !== profile.user.id) {
+      throw new UnauthorizedError("You can only delete you own replies!");
+    }
+
+    await deleteReplyById(replyId);
+
+    res.status(204).send();
 
   } catch (error) {
     next(error);
