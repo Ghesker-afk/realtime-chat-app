@@ -113,3 +113,37 @@ export async function deleteReplyById(replyId: number) {
     [replyId]
   );
 }
+
+export async function likeThreadOnce(params: {
+  threadId: number;
+  userId: number;
+}) {
+
+  const {threadId, userId} = params;
+
+  await query(
+    `
+    INSERT INTO thread_reactions (thread_id, user_id)
+    VALUES ($1, $2)
+    ON CONFLICT (thread_id, user_id) DO NOTHING
+    `,
+    [threadId, userId]
+  );
+
+}
+
+export async function removeThreadOnce(params: {
+  threadId: number;
+  userId: number;
+}) {
+  
+  const {threadId, userId} = params;
+
+  await query(
+    `
+    DELETE FROM thread_reactions
+    WHERE thread_id = $1 AND user_id = $2
+    `,
+    [threadId, userId]
+  );
+}
