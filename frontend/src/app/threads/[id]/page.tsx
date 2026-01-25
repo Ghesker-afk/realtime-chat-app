@@ -1,4 +1,5 @@
 "use client";
+
 import { useAuth } from "@clerk/nextjs";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -15,7 +16,7 @@ function ThreadsDetailsPage() {
   // we will render the current user handle (one more state).
   // and we are going to manage the comments (plus state).
 
-  const [thread, setThread] = useState<Thread>
+  const [thread, setThread] = useState<thread>
 
   return (
     <div>Threads Details Page</div>
