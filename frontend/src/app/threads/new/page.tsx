@@ -1,11 +1,12 @@
 "use client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { createBrowserApiClient } from "@/lib/api-client";
+import { apiGet, createBrowserApiClient } from "@/lib/api-client";
 import { Category } from "@/types/thread";
 import { useAuth } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMemo, useState } from "react";
+import { log } from "console";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import {z} from "zod";
 
@@ -46,6 +47,51 @@ function NewThreadsPage() {
     }
   });
 
+  useEffect(() => {
+
+    let isMounted = true;
+
+    async function load() {
+    setIsLoading(true);
+
+    try {
+
+      const extractCats = await apiGet<Category[]>(apiClient, "/api/threads/categories");
+
+      if (!isMounted) {
+        return;
+      } else {
+        setCategories(extractCats);
+      }
+
+      if (extractCats.length > 0) {
+        form.setValue("categorySlug", extractCats[0]?.slug);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      if (isMounted) {
+        setIsLoading(false);
+      }
+    }
+    } 
+
+    load();
+  }, [apiClient, form]);
+
+  async function onThreadSubmit(values: NewThreadFormValues) {
+    try {
+      setIsSubmitting(true);
+
+      const response = await apiClient.post();
+
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-8">
       <div className="space-y-2">
@@ -60,7 +106,7 @@ function NewThreadsPage() {
         </CardHeader>
 
         <CardContent>
-          <form className="space-y-6">
+          <form onSubmit={form.handleSubmit(onThreadSubmit)} className="space-y-6">
             <div className="space-y-2">
               <label className="text-sm font-semibold text-foreground" htmlFor="title">
                 Thread Title
