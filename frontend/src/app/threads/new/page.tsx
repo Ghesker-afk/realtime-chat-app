@@ -2,12 +2,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { apiGet, createBrowserApiClient } from "@/lib/api-client";
-import { Category } from "@/types/thread";
+import { Category, ThreadDetail } from "@/types/thread";
 import { useAuth } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { log } from "console";
+import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import {z} from "zod";
 
 // The idea with useMemo is that it allows us to "remember"
@@ -24,6 +25,7 @@ type NewThreadFormValues = z.infer<typeof NewThreadsSchema>;
 function NewThreadsPage() {
 
   const {getToken} = useAuth();
+  const router = useRouter();
 
   // useMemo is a hook that memoizes a value and returns
   // the same value until any of the dependencies in the
@@ -83,7 +85,20 @@ function NewThreadsPage() {
     try {
       setIsSubmitting(true);
 
-      const response = await apiClient.post();
+      const response = await apiClient.post("/api/threads/threads", {
+        title: values.title,
+        body: values.body,
+        categorySlug: values.categorySlug
+      });
+
+      const created = response?.data?.data as ThreadDetail;
+
+      toast.success("New thread created successfully!", {
+        description: "Your thread is now live!"
+      });
+
+      router.push("/");
+      router.push(`/threads/${created?.id}`);
 
     } catch (error) {
       console.log(error);
