@@ -4,7 +4,7 @@ import { getAuth } from "@clerk/express";
 import { BadRequestError, UnauthorizedError } from "../lib/errors.js";
 import { z } from "zod";
 import { getUserFromClerk } from "../modules/users/user.service.js";
-import { createReply, deleteReplyById, findReplyAuthor, likeThreadOnce, listRepliesForThread, removeThreadOnce } from "../modules/threads/replies.repository.js";
+import { createReply, deleteReplyById, findReplyAuthor, getThreadDetailsWithCounts, likeThreadOnce, listRepliesForThread, removeThreadOnce } from "../modules/threads/replies.repository.js";
 
 export const threadsRouter = Router();
 
@@ -71,10 +71,10 @@ threadsRouter.get("/threads/:threadId", async(req, res, next) => {
       throw new UnauthorizedError("Unauthorized");
     }
 
-    // const profile = await getUserFromClerk(auth.userId);
-    // const viewerUserId = profile.user.id;
+    const profile = await getUserFromClerk(auth.userId);
+    const viewerUserId = profile.user.id;
     
-    const thread = await getThreadById(threadId);
+    const thread = await getThreadDetailsWithCounts({threadId, viewerUserId});
 
     res.json({ data: thread });
 
