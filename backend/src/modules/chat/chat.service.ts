@@ -32,3 +32,68 @@ export async function listChatUsers(currentUserId: number) {
 }
 
 // method to render all the messages between two users
+export async function listDirectMessages(params: {
+  userId: number;
+  otherUserId: number;
+  limit: number;
+}) {
+  try {
+
+    const {userId, otherUserId, limit} = params;
+    const setLimit = Math.min(Math.max(limit || 50, 1), 200);
+
+    const result = await query(
+      `
+      SELECT
+        dm.id,
+        dm.sender_user_id,
+        dm.recipient_user_id,
+        dm.body,
+        dm.image_url,
+        dm.created_at,
+        s.display_name AS sender_display_name,
+        s.handle AS sender_handle,
+        s.avatar_url AS sender_avatar,
+        r.display_name AS recipient_display_name,
+        r.handle AS recipient_handle,
+        r.avatar_url AS recipient_avatar
+      FROM direct_messages dm
+      INNER JOIN users s 
+      ON s.id = dm.sender_user_id
+      INNER JOIN users r
+      ON r.id = dm.recipient_user_id
+      WHERE 
+        (dm.sender_user_id = $1 AND dm.recipient_user_id = $2)
+        OR
+        (dm.sender_user_id = $2 AND dm.recipient_user_id = $1)
+      ORDER BY dm.created_at DESC
+      LIMIT $3;
+      `,
+      [userId, otherUserId, setLimit]
+    );
+
+    const rows = result.rows.slice().reverse();
+
+    return rows.map((row) => ({
+      id: row.id as number,
+      senderUserId: row.sender_user_id as number,
+      recipientUserId: row.recipient_user_id as number,
+      body: (row.body as string) ?? null,
+      imageUrl: (row.image_url as string) ?? null,
+      createdAt: (row.created_at as Date).toISOString(),
+      sender: {
+        displayName: (row.sender_display_name as string) ?? null,
+        handle: (row.sender_handle as string) ?? null,
+        avatarUrl: (row.sender_avatar as string) ?? null
+      },
+      recipient: {
+        displayName: (row.recipient_display_name as string) ?? null,
+        handle: (row.recipient_handle as string) ?? null,
+        avatarUrl: (row.recipient_avatar as string) ?? null
+      }
+    }));
+
+  } catch (error) {
+    throw error;
+  }
+}
