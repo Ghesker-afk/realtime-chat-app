@@ -1,5 +1,5 @@
-import {Router} from "express";
-import {z} from "zod";
+import { Router } from "express";
+import { z } from "zod";
 import { toUserProfileResponse, UserProfile, UserProfileResponse } from "../modules/users/user.types.js";
 import { getAuth } from "@clerk/express";
 import { UnauthorizedError } from "../lib/errors.js";
@@ -8,7 +8,6 @@ import { getUserFromClerk, updateUserProfile } from "../modules/users/user.servi
 export const userRouter = Router();
 
 // User Update Schema
-
 const UserProfileUpdateSchema = z.object({
   displayName: z.string().trim().max(50).optional(),
   handle: z.string().trim().max(30).optional(),
@@ -16,16 +15,18 @@ const UserProfileUpdateSchema = z.object({
   avatarUrl: z.url("Avatar must be a valid url").optional()
 });
 
-function toResponse(profile: UserProfile): UserProfileResponse {
-  
+function toResponse(profile: UserProfile) : UserProfileResponse {
   return toUserProfileResponse(profile);
 }
 
 // GET /api/me
+// This endpoint will give your own profile information.
 
 userRouter.get("/", async(req, res, next) => {
   try {
+
     const auth = getAuth(req);
+    
     if (!auth.userId) {
       throw new UnauthorizedError("Unauthorized");
     }
@@ -41,6 +42,7 @@ userRouter.get("/", async(req, res, next) => {
 });
 
 // PATCH /api/me
+// This endpoint is to you update some information about you.
 
 userRouter.patch("/", async (req, res, next) => {
   try {

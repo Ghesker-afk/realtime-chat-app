@@ -1,5 +1,5 @@
-// one type for our DB, and one more we want to
-// expose to the API. 
+// One user type is for our database, and the other
+// are the one we want to expose to the API.
 
 export type UserRow = {
   id: number;
@@ -10,10 +10,14 @@ export type UserRow = {
   bio: string | null;
   created_at: Date;
   updated_at: Date;
-}
+};
 
-// this is the type that we are going to expose
+// We convert the snake_case from Postgres to camelCase
+// in our API!
+
+// This is the type that we are going to expose
 // to the API layer.
+
 export type User = {
   id: number;
   clerkUserId: string;
@@ -23,16 +27,17 @@ export type User = {
   bio: string | null;
   createdAt: Date;
   updatedAt: Date;
-}
+};
 
+// This is the shape of the profile that we want to expose
+// from our service layer (API).
 export type UserProfile = {
   user: User;
   clerkEmail: string | null;
   clerkFullName: string | null;
 };
 
-// this is the structure that we want
-// to return back
+// This is the structure that we want to return back.
 export type UserProfileResponse = {
   id: number;
   clerkUserId: string;
@@ -43,6 +48,8 @@ export type UserProfileResponse = {
   bio: string | null;
 };
 
+// Helper function to convert the user profile to the
+// type that suits more for the response (UserResponse)
 export function toUserProfileResponse(profile: UserProfile) : UserProfileResponse {
 
   const {user, clerkEmail, clerkFullName} = profile;
@@ -55,5 +62,5 @@ export function toUserProfileResponse(profile: UserProfile) : UserProfileRespons
     handle: user.handle ?? null,
     avatarUrl: user.avatarUrl ?? null,
     bio: user.bio ?? null
-  }
+  };
 }

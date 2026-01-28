@@ -1,5 +1,6 @@
 // repository -> is where we write our all SQL queries
-// which will interact with our DB.
+// which will interact with our database 
+// (similar to a MERN controller).
 
 import { query } from "../../db/db.js";
 import { User, UserRow } from "./user.types.js";
