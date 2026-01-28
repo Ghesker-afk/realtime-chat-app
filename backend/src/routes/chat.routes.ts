@@ -56,3 +56,5 @@ chatRouter.get("/conversations/:otherUserId/messages", async(req, res, next) => 
     next(error);
   }
 });
+
+// stop at 10:03:26
