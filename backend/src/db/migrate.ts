@@ -3,6 +3,8 @@ import fs from "node:fs";
 import { logger } from "../lib/logger.js";
 import { query } from "./db.js";
 
+// This will give the directory from where we need 
+// to pick all the migrations!
 const migrationsDir = path.resolve(process.cwd(), "src", "migrations");
 
 async function runMigrations() {
@@ -10,7 +12,10 @@ async function runMigrations() {
     `Looking for migrations in ${migrationsDir}`
   );
 
-  const files = fs.readdirSync(migrationsDir).filter(file => file.endsWith(".SQL")).sort();
+  // The reason behind the numbers in the name of the .sql
+  // files (0001, 0002, etc) is the .sort() method that we
+  // are using here.
+  const files = fs.readdirSync(migrationsDir).filter(file => file.endsWith(".sql")).sort();
 
   if (files.length === 0) {
     logger.info("No migrations found!");
@@ -30,9 +35,9 @@ async function runMigrations() {
 }
 
 runMigrations().then(() => {
-  logger.info("All migrations run successfully");
+  logger.info("All migrations run successfully!");
   process.exit(0);
 }).catch(err => {
   logger.error(`Migration failed ${(err as Error).message}`);
   process.exit(1);
-})
+});
