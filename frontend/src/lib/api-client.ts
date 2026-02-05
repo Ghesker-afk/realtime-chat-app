@@ -4,7 +4,8 @@ import axios, { type AxiosRequestConfig, type AxiosError, type AxiosInstance } f
 // pass this token to the backend.
 export function createBrowserApiClient(
   getToken: () => Promise<string | null>
-): AxiosInstance {
+) : AxiosInstance {
+  
   const client = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5000",
     withCredentials: false

@@ -1,6 +1,7 @@
 import { Request, Router } from "express";
 import multer from "multer";
 import { cloudinary } from "../config/cloudinary.js";
+import { BAD_REQUEST, OK } from "../constants/http.js";
 
 export const uploadRouter = Router();
 
@@ -14,13 +15,13 @@ const upload = multer({
 uploadRouter.post("/image-upload", upload.single("file"), async(req: Request, res, next) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: "No file provided" });
+      return res.status(BAD_REQUEST).json({ error: "No file provided" });
     }
 
     const file = req.file;
 
     if (!file.mimetype.startsWith("image/")) {
-      return res.status(400).json({ error: "Only image files are allowed" });
+      return res.status(BAD_REQUEST).json({ error: "Only image files are allowed" });
     }
 
     const result = await new Promise<{
@@ -46,7 +47,7 @@ uploadRouter.post("/image-upload", upload.single("file"), async(req: Request, re
     uploadStream.end(file.buffer);
     })
 
-    return res.status(200).json({
+    return res.status(OK).json({
       url: result.secure_url,
       width: result.width,
       height: result.height

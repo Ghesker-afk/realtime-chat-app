@@ -4,6 +4,7 @@ import { toUserProfileResponse, UserProfile, UserProfileResponse } from "../modu
 import { getAuth } from "@clerk/express";
 import { UnauthorizedError } from "../lib/errors.js";
 import { getUserFromClerk, updateUserProfile } from "../modules/users/user.service.js";
+import { OK } from "../constants/http.js";
 
 export const userRouter = Router();
 
@@ -34,7 +35,7 @@ userRouter.get("/", async(req, res, next) => {
     const profile = await getUserFromClerk(auth.userId);
     const response = toResponse(profile);
 
-    res.json({ data: response });
+    res.status(OK).json({ data: response });
 
   } catch (error) {
     next(error);
@@ -78,7 +79,7 @@ userRouter.patch("/", async (req, res, next) => {
 
       const response = toResponse(profile);
 
-      res.json({
+      res.status(OK).json({
         data: response
       });
     } catch (err: any) {

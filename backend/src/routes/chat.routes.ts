@@ -2,6 +2,7 @@ import { getAuth } from "@clerk/express";
 import { Router } from "express";
 import { getUserFromClerk } from "../modules/users/user.service.js";
 import { listChatUsers, listDirectMessages } from "../modules/chat/chat.service.js";
+import { OK } from "../constants/http.js";
 
 export const chatRouter = Router();
 
@@ -19,7 +20,7 @@ chatRouter.get("/", async(req, res, next) => {
 
     const users = await listChatUsers(currentUserId);
 
-    res.json({ data: users });
+    res.status(OK).json({ data: users });
 
   } catch (error) {
     next(error);
@@ -50,7 +51,7 @@ chatRouter.get("/conversations/:otherUserId/messages", async(req, res, next) => 
       limit: limit || 50
     });
 
-    res.json({ data: messages });
+    res.status(OK).json({ data: messages });
 
   } catch (error) {
     next(error);

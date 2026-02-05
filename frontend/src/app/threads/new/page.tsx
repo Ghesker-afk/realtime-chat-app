@@ -1,4 +1,5 @@
 "use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { apiGet, createBrowserApiClient } from "@/lib/api-client";
@@ -9,18 +10,18 @@ import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import {z} from "zod";
+import { z } from "zod";
 
 // The idea with useMemo is that it allows us to "remember"
 // a computed value between renders.
 
-const NewThreadsSchema = z.object({
+const NewThreadSchema = z.object({
   title: z.string().trim().min(5, "Title is too short"),
   body: z.string().trim().min(15, "Body is too short"),
   categorySlug: z.string().trim().min(1, "Category is required") 
 });
 
-type NewThreadFormValues = z.infer<typeof NewThreadsSchema>;
+type NewThreadFormValues = z.infer<typeof NewThreadSchema>;
 
 function NewThreadsPage() {
 
@@ -41,7 +42,7 @@ function NewThreadsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<NewThreadFormValues>({
-    resolver: zodResolver(NewThreadsSchema),
+    resolver: zodResolver(NewThreadSchema),
     defaultValues: {
       title: "",
       body: "",

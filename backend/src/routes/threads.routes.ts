@@ -5,6 +5,7 @@ import { BadRequestError, UnauthorizedError } from "../lib/errors.js";
 import { z } from "zod";
 import { getUserFromClerk } from "../modules/users/user.service.js";
 import { createReply, deleteReplyById, findReplyAuthor, getThreadDetailsWithCounts, likeThreadOnce, listRepliesForThread, removeThreadOnce } from "../modules/threads/replies.repository.js";
+import { CREATED, NO_CONTENT, OK } from "../constants/http.js";
 
 export const threadsRouter = Router();
 
@@ -49,7 +50,7 @@ threadsRouter.post("/threads", async(req, res, next) => {
       body: parsedBody.body
     });
 
-    res.status(201).json({ data: newlyCreatedThread });
+    res.status(CREATED).json({ data: newlyCreatedThread });
 
   } catch (error) {
     next(error);
@@ -76,7 +77,7 @@ threadsRouter.get("/threads/:threadId", async(req, res, next) => {
     
     const thread = await getThreadDetailsWithCounts({threadId, viewerUserId});
 
-    res.json({ data: thread });
+    res.status(OK).json({ data: thread });
 
   } catch (error) {
     next(error);
@@ -96,7 +97,7 @@ threadsRouter.get("/threads", async(req, res, next) => {
 
     const extractListOfThreads = await listThreads(filter);
 
-    res.json({ data: extractListOfThreads });
+    res.status(OK).json({ data: extractListOfThreads });
 
   } catch (error) {
     next(error);
@@ -117,7 +118,7 @@ threadsRouter.get("/threads/:threadId/replies", async(req, res, next) => {
     const threadId = Number(req.params.threadId);
     const replies = await listRepliesForThread(threadId);
 
-    res.json({ data: replies });
+    res.status(OK).json({ data: replies });
 
   } catch (error) {
     next(error);
@@ -153,7 +154,7 @@ threadsRouter.post("/threads/:threadId/replies", async(req, res, next) => {
 
     // notification -> trigger here, but later.
 
-    res.status(201).json({ data: reply });
+    res.status(CREATED).json({ data: reply });
 
   } catch (error) {
     next(error);
@@ -183,7 +184,7 @@ threadsRouter.delete("/replies/:replyId", async(req, res, next) => {
 
     await deleteReplyById(replyId);
 
-    res.status(204).send();
+    res.status(NO_CONTENT).send();
 
   } catch (error) {
     next(error);
@@ -213,7 +214,7 @@ threadsRouter.post("/threads/:threadId/like", async (req, res, next) => {
 
     // notification -> logic but later
 
-    res.status(204).send();
+    res.status(OK).send();
 
   } catch (error) {
     next(error);
@@ -241,7 +242,7 @@ threadsRouter.delete("/threads/:threadId/like", async (req, res, next) => {
       userId: profile.user.id
     });
 
-    res.status(204).send();
+    res.status(NO_CONTENT).send();
 
   } catch (error) {
     next(error);
