@@ -3,7 +3,7 @@
 import { env } from "node:process";
 import { createApp } from "./app.js";
 import { assertDatabaseConnection } from "./db/db.js";
-import { logger } from "./lib/logger.js";
+import { logger } from "./utils/logger.js";
 import http from 'node:http';
 
 async function bootstrap(){

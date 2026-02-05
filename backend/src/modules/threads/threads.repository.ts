@@ -1,5 +1,5 @@
 import { query } from "../../db/db.js";
-import { BadRequestError, NotFoundError } from "../../lib/errors.js";
+import { BadRequestError, NotFoundError } from "../../utils/errors.js";
 import { Category, CategoryRow, mapCategoryRow, mapThreadDetailRow, ThreadDetail, ThreadDetailRow, ThreadListFilter, ThreadSummary } from "./threads.types.js";
 
 export function parseThreadListFilter(queryObj: {

@@ -1,5 +1,5 @@
 import { query } from "../../db/db.js";
-import { BadRequestError, NotFoundError } from "../../lib/errors.js";
+import { BadRequestError, NotFoundError } from "../../utils/errors.js";
 import { getThreadById } from "./threads.repository.js";
 
 

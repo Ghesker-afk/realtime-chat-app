@@ -1,6 +1,6 @@
 import { Pool, QueryResult, QueryResultRow } from 'pg';
 import { env } from '../config/env.js';
-import { logger } from '../lib/logger.js';
+import { logger } from '../utils/logger.js';
 
 export const pool = new Pool({
   host: env.DB_HOST,

@@ -1,6 +1,6 @@
 import path from "node:path";
 import fs from "node:fs";
-import { logger } from "../lib/logger.js";
+import { logger } from "../utils/logger.js";
 import { query } from "./db.js";
 
 // This will give the directory from where we need 

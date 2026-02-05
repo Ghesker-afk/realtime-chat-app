@@ -1,6 +1,6 @@
 import type { Response, Request, NextFunction } from "express";
 import { clerkMiddleware, getAuth, clerkClient } from "@clerk/express";
-import { UnauthorizedError } from "../lib/errors.js";
+import { UnauthorizedError } from "../utils/errors.js";
 
 export {clerkMiddleware, clerkClient, getAuth}
 

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { toUserProfileResponse, UserProfile, UserProfileResponse } from "../modules/users/user.types.js";
 import { getAuth } from "@clerk/express";
-import { UnauthorizedError } from "../lib/errors.js";
+import { UnauthorizedError } from "../utils/errors.js";
 import { getUserFromClerk, updateUserProfile } from "../modules/users/user.service.js";
 import { OK } from "../constants/http.js";
 

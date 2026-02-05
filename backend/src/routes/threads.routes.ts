@@ -1,11 +1,12 @@
 import { Router } from "express";
-import { createThread, getThreadById, listCategories, listThreads, parseThreadListFilter } from "../modules/threads/threads.repository.js";
+import { createThread, listCategories, listThreads, parseThreadListFilter } from "../modules/threads/threads.repository.js";
 import { getAuth } from "@clerk/express";
-import { BadRequestError, UnauthorizedError } from "../lib/errors.js";
+import { BadRequestError, UnauthorizedError } from "../utils/errors.js";
 import { z } from "zod";
 import { getUserFromClerk } from "../modules/users/user.service.js";
 import { createReply, deleteReplyById, findReplyAuthor, getThreadDetailsWithCounts, likeThreadOnce, listRepliesForThread, removeThreadOnce } from "../modules/threads/replies.repository.js";
 import { CREATED, NO_CONTENT, OK } from "../constants/http.js";
+import { getCategoriesHandler } from "../modules/threads/threads.controller.js";
 
 export const threadsRouter = Router();
 
@@ -18,16 +19,7 @@ const CreatedThreadSchema = z.object({
 // fetch the list of categories
 // 
 
-threadsRouter.get("/categories", async(_req, res, next) => {
-  try {
-    
-    const extractListOfCategories = await listCategories();
-    res.json({ data: extractListOfCategories });
-
-  } catch (error) {
-    next(error);
-  }
-});
+threadsRouter.get("/categories", getCategoriesHandler);
 
 threadsRouter.post("/threads", async(req, res, next) => {
   try {
