@@ -1,34 +1,31 @@
-import type { ErrorRequestHandler } from "express";
-import { HttpError } from "../lib/errors.js";
-import { ZodError } from "zod";
-import { logger } from "../lib/logger.js";
+import type { ErrorRequestHandler, Response } from "express";
+import { z } from "zod";
+import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from "../constants/http.js";
 
-export const errorHandler : ErrorRequestHandler = (err, req, res, _next) => {
-  let status = 500;
-  let message = "Internal server error";
-  let details : unknown = undefined;
-
-  if (err instanceof HttpError) {
-    status = err.status;
-    message = err.message;
-    details = err.details;
-  } else if (err instanceof ZodError) {
-    status = 400;
-    message = "Invalid request data";
-    details = err.issues.map(issue => ({
-      path: issue.path,
-      message: issue.message
-    }));
-  }
-
-  logger.error(`${req.method} ${req.originalUrl} ----> ${status}-${message}`);
-
-  res.status(status).json({
-    error: {
-      message,
-      status,
-      details
+function handleZodError(res: Response, error: z.ZodError) {
+  const errors = error.issues.map((err) => (
+    {
+      path: err.path.join("."),
+      message: err.message
     }
+  ));
+
+  return res.status(BAD_REQUEST).json({
+    message: error.message,
+    errors
   });
 }
+
+const errorHandler: ErrorRequestHandler = (error, req, res, _next) => {
+
+  console.log(`PATH: ${req.path}`, error);
+
+  if (error instanceof z.ZodError) {
+    return handleZodError(res, error);
+  }
+
+  return res.status(INTERNAL_SERVER_ERROR).send("Internal Server Error");
+};
+
+export default errorHandler;
 
