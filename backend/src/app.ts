@@ -27,6 +27,10 @@ export function createApp() {
   app.use("/api", apiRouter);
 
   app.use(notFoundHandler);
+
+  // This middleware will catch all the errors that are
+  // thrown in any of the routes above, and all of our error
+  // handling logic will live in this middleware.
   app.use(errorHandler);
 
   return app;

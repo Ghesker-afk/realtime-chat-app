@@ -1,5 +1,10 @@
+import { getAuth } from "@clerk/express";
 import catchErrors from "../../utils/catchErrors.js";
-import { listCategories } from "./threads.repository.js";
+import { createThread, listCategories, listThreads, parseThreadListFilter } from "./threads.repository.js";
+import { UnauthorizedError } from "../../utils/errors.js";
+import { getUserFromClerk } from "../users/user.service.js";
+import { CREATED, OK } from "../../constants/http.js";
+import { createThreadSchema } from "./threads.schemas.js";
 
 
 export const getCategoriesHandler = catchErrors(
@@ -7,3 +12,44 @@ export const getCategoriesHandler = catchErrors(
     const extractListOfCategories = await listCategories();
     res.json({ data: extractListOfCategories });
 });
+
+export const createThreadHandler = catchErrors(
+  async(req, res, _next) => {
+
+    const auth = getAuth(req);
+
+    // if you aren't authenticated, you can't create
+    if (!auth.userId) {
+      throw new UnauthorizedError("Unauthorized");
+    }
+
+    const parsedBody = createThreadSchema.parse(req.body);
+
+    const profile = await getUserFromClerk(auth.userId);
+
+    const newlyCreatedThread = await createThread({
+      categorySlug: parsedBody.categorySlug,
+      authorUserId: profile.user.id,
+      title: parsedBody.title,
+      body: parsedBody.body
+    });
+
+    res.status(CREATED).json({ data: newlyCreatedThread });
+});
+
+export const getThreadsHandler = catchErrors(
+  async(req, res, _next) => {
+  
+    const filter = parseThreadListFilter({
+      page: req.query.page,
+      pageSize: req.query.pageSize,
+      category: req.query.category,
+      q: req.query.q,
+      sort: req.query.sort
+    });
+
+    const extractListOfThreads = await listThreads(filter);
+
+    res.status(OK).json({ data: extractListOfThreads });
+  }
+);
