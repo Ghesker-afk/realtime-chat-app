@@ -1,13 +1,14 @@
 
 
-// GET the unread only notifications list
-// /api/notifications/unreadonly=true|false
+// GET /api/notifications/unreadonly=true | false
+// Gets the list of notifications of a user.
 
-// POST to mark all the notifications as read
-// /api/notifications/read-all
 
-// POST to when we click in one specific notification, we
-// can go to there
-// /api/notifications/:id
 
-// we will come back at 7:42:05
+// POST /api/notifications/read-all
+// Marks all the notifications as read. 
+
+
+
+// POST /api/notifications/:id
+// Reads a certain notification.

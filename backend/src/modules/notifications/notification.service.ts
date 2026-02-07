@@ -1,0 +1,86 @@
+import { query } from "../../db/db.js";
+import { mapNotificationsRow, NotificationRow } from "./notifications.types.js";
+
+type ActivityReplyParams = {
+  threadId: number;
+  actorUserId: number;
+};
+
+export const createCommentNotification = async (replyParams: ActivityReplyParams) => {
+
+  const { threadId, actorUserId } = replyParams;
+
+  // First, we must find the author (and note that the actor
+  // user is the user that has commented on the author's 
+  // thread).
+  const threadResponse = await query(
+    `
+    SELECT author_user_id
+    FROM threads
+    WHERE id = $1
+    LIMIT 1
+    `,
+    [threadId]
+  );
+
+  const row = threadResponse.rows[0] as { author_user_id: number } | undefined;
+
+  if (!row) {
+    return;
+  }
+
+  const authorUserId = row.author_user_id;
+
+  // If you like your own post, you will not going to send
+  // any notification.
+  if (authorUserId === actorUserId) {
+    return ;
+  }
+
+  const insertResponse = await query(
+    `
+    INSERT INTO notifications (user_id, actor_user_id, thread_id, type)
+    VALUES ($1, $2, $3, 'REPLY_ON_THREAD')
+    RETURNING id, created_at
+    `,
+    [authorUserId, actorUserId, threadId]
+  );
+
+  const notificationRow = insertResponse.rows[0] as { id: number };
+  if (!notificationRow) {
+    return;
+  }
+
+  const fullResponse = await query(
+    `
+    SELECT
+      n.id,
+      n.type,
+      n.thread_id,
+      n.created_at,
+      n.read_at,
+      actor.display_name AS actor_display_name
+      actor.handle AS actor_handle,
+      t.title AS thread_title
+    FROM notifications n
+    INNER JOIN users actor
+    ON actor.id = n.actor_user_id
+    INNER JOIN threads t
+    ON t.id = n.thread_id
+    WHERE n.id = $1
+    LIMIT 1
+    `,
+    [notificationRow.id]
+  );
+
+  const fullRow = fullResponse.rows[0] as NotificationRow | undefined;
+
+  if (!fullRow) {
+    return;
+  }
+
+  const payload = mapNotificationsRow(fullRow);
+
+  // Then, we will emit our first Socket
+  // event.
+}; 
