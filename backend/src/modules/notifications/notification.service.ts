@@ -177,12 +177,12 @@ type NotificationsParams = {
   unreadOnly: boolean;
 };
 
-export const listNotificationsForUser = async (notificationsParams: NotificationsParams) : Promise<NotificationRow[]> => {
+export const listNotificationsForUser = async (notificationsParams: NotificationsParams) => {
 
   const { userId, unreadOnly } = notificationsParams;
 
   const conditions = ["n.user_id = $1"];
-  const values: readonly unknown[] = [userId];
+  const values: unknown[] = [userId];
 
   if (unreadOnly) {
     conditions.push("n.read_at IS NULL");
@@ -213,4 +213,22 @@ export const listNotificationsForUser = async (notificationsParams: Notification
   );
 
   return result.rows.map(notification => mapNotificationsRow(notification));
+};
+
+type NotificationsReadParams = {
+  userId: number;
+  notificationId: number;
+};
+
+export const markNotificationRead = async (notificationsRead: NotificationsReadParams) => {
+  const { userId, notificationId } = notificationsRead;
+
+  await query(
+    `
+    UPDATE notifications 
+    SET read_at = COALESCE(read_at, NOW())
+    WHERE id = $1 AND user_id = $2
+    `,
+    [notificationId, userId]
+  );
 };
