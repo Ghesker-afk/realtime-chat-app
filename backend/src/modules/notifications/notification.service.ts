@@ -13,7 +13,7 @@ export const createCommentNotification = async (replyParams: ActivityReplyParams
   // First, we must find the author (and note that the actor
   // user is the user that has commented on the author's 
   // thread).
-  const threadResponse = await query(
+  const threadResponse = await query<{ author_user_id: number; }>(
     `
     SELECT author_user_id
     FROM threads
@@ -23,9 +23,10 @@ export const createCommentNotification = async (replyParams: ActivityReplyParams
     [threadId]
   );
 
-  const row = threadResponse.rows[0] as { author_user_id: number } | undefined;
+  const row = threadResponse.rows[0];
 
   if (!row) {
+    // Thread not found, so no notification created!
     return;
   }
 
@@ -34,10 +35,10 @@ export const createCommentNotification = async (replyParams: ActivityReplyParams
   // If you like your own post, you will not going to send
   // any notification.
   if (authorUserId === actorUserId) {
-    return ;
+    return;
   }
 
-  const insertResponse = await query(
+  const insertResponse = await query<{ id: number; created_at: Date; }>(
     `
     INSERT INTO notifications (user_id, actor_user_id, thread_id, type)
     VALUES ($1, $2, $3, 'REPLY_ON_THREAD')
@@ -46,12 +47,15 @@ export const createCommentNotification = async (replyParams: ActivityReplyParams
     [authorUserId, actorUserId, threadId]
   );
 
-  const notificationRow = insertResponse.rows[0] as { id: number };
+  const notificationRow = insertResponse.rows[0];
+
   if (!notificationRow) {
     return;
   }
 
-  const fullResponse = await query(
+  const notificationId = notificationRow.id;
+
+  const fullResponse = await query<NotificationRow>(
     `
     SELECT
       n.id,
@@ -59,7 +63,7 @@ export const createCommentNotification = async (replyParams: ActivityReplyParams
       n.thread_id,
       n.created_at,
       n.read_at,
-      actor.display_name AS actor_display_name
+      actor.display_name AS actor_display_name,
       actor.handle AS actor_handle,
       t.title AS thread_title
     FROM notifications n
@@ -70,10 +74,10 @@ export const createCommentNotification = async (replyParams: ActivityReplyParams
     WHERE n.id = $1
     LIMIT 1
     `,
-    [notificationRow.id]
+    [notificationId]
   );
 
-  const fullRow = fullResponse.rows[0] as NotificationRow | undefined;
+  const fullRow = fullResponse.rows[0];
 
   if (!fullRow) {
     return;
@@ -83,4 +87,87 @@ export const createCommentNotification = async (replyParams: ActivityReplyParams
 
   // Then, we will emit our first Socket
   // event.
-}; 
+};
+
+export const createLikeNotification = async (replyParams: ActivityReplyParams) => {
+
+  const { threadId, actorUserId } = replyParams;
+
+  // First, we must find the author (and note that the actor
+  // user is the user that has commented on the author's 
+  // thread).
+  const threadResponse = await query<{ author_user_id: number; }>(
+    `
+    SELECT author_user_id
+    FROM threads
+    WHERE id = $1
+    LIMIT 1
+    `,
+    [threadId]
+  );
+
+  const row = threadResponse.rows[0];
+
+  if (!row) {
+    // Thread not found, so no notification created!
+    return;
+  }
+
+  const authorUserId = row.author_user_id;
+
+  // If you like your own post, you will not going to send
+  // any notification.
+  if (authorUserId === actorUserId) {
+    return;
+  }
+
+  const insertResponse = await query<{ id: number; created_at: Date; }>(
+    `
+    INSERT INTO notifications (user_id, actor_user_id, thread_id, type)
+    VALUES ($1, $2, $3, 'LIKE_ON_THREAD')
+    RETURNING id, created_at
+    `,
+    [authorUserId, actorUserId, threadId]
+  );
+
+  const notificationRow = insertResponse.rows[0];
+
+  if (!notificationRow) {
+    return;
+  }
+
+  const notificationId = notificationRow.id;
+
+  const fullResponse = await query<NotificationRow>(
+    `
+    SELECT
+      n.id,
+      n.type,
+      n.thread_id,
+      n.created_at,
+      n.read_at,
+      actor.display_name AS actor_display_name,
+      actor.handle AS actor_handle,
+      t.title AS thread_title
+    FROM notifications n
+    INNER JOIN users actor
+    ON actor.id = n.actor_user_id
+    INNER JOIN threads t
+    ON t.id = n.thread_id
+    WHERE n.id = $1
+    LIMIT 1
+    `,
+    [notificationId]
+  );
+
+  const fullRow = fullResponse.rows[0];
+
+  if (!fullRow) {
+    return;
+  }
+
+  const payload = mapNotificationsRow(fullRow);
+
+  // Then, we will emit our first Socket
+  // event.
+};
